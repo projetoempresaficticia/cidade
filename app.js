@@ -89,6 +89,13 @@ function colocarPredio(col, row, ficheiro, w, h, aoClicar, aria) {
 // decoração (árvore, candeeiro, carro, flor...) -- mesma âncora dos
 // prédios (base encostada ao chão da célula), mas sem clique nem
 // marcador -- só para dar vida às ruas e à praça.
+//
+// z-index com +5000: um prédio de 256px de largura tem a caixa muito
+// mais larga que o seu losango -- uma pessoa/árvore numa célula vizinha
+// caía por baixo dele mesmo estando "à frente" pela conta de linha+
+// coluna (apanhado a testar: um pedestre ao lado da igreja ficava
+// escondido). Decoração é sempre rasteira, nunca faz sentido ficar
+// atrás de um prédio, por isso ganha sempre.
 function colocarDecoracao(col, row, ficheiro, w, h) {
   const p = projetar(col, row);
   const left = Math.round(p.x - w / 2);
@@ -100,7 +107,7 @@ function colocarDecoracao(col, row, ficheiro, w, h) {
   el.style.height = h + 'px';
   el.style.left = left + 'px';
   el.style.top = top + 'px';
-  el.style.zIndex = z(col, row) + 1;
+  el.style.zIndex = z(col, row) + 5000;
   mapa.appendChild(el);
   registarLimites(left, top, w, h);
 }
@@ -123,7 +130,7 @@ const CANTO_NE = 'web/mapa/tile_ground_grass_water_NE_clean.png';
 const CANTO_SE = 'web/mapa/tile_ground_grass_water_NW_clean.png';
 const CANTO_SW = 'web/mapa/tile_ground_grass_water_SW_clean.png';
 
-const COL_MIN = 1, COL_MAX = 16, ROW_MIN = 1, ROW_MAX = 11;
+const COL_MIN = 1, COL_MAX = 18, ROW_MIN = 1, ROW_MAX = 11;
 
 for (let row = 0; row <= ROW_MAX + 1; row += 1) {
   for (let col = 0; col <= COL_MAX + 1; col += 1) {
@@ -144,9 +151,19 @@ for (let row = 0; row <= ROW_MAX + 1; row += 1) {
   }
 }
 
-// duas ruas: a institucional (linha 4) e a do novo bairro (linha 8)
-for (let col = 2; col <= 15; col += 1) colocarTile(col, 4, ROAD);
-for (let col = 2; col <= 15; col += 1) colocarTile(col, 8, ROAD);
+// duas ruas horizontais: a institucional (linha 4) e a do novo bairro
+// (linha 8) -- e uma rua vertical a cruzar as duas, para a "baixa"
+// (linhas 2-6) deixar de ser um bloco único e virar duas quadras de
+// verdade, com um cruzamento a sério no meio.
+const ROAD_V = 'web/mapa/tile_road_straight_SW_normal.png';
+const CRUZAMENTO = 'web/mapa/tile_road_xsing_normal.png';
+
+for (let col = 2; col <= 17; col += 1) colocarTile(col, 4, col === 9 ? CRUZAMENTO : ROAD);
+for (let col = 2; col <= 17; col += 1) colocarTile(col, 8, col === 9 ? CRUZAMENTO : ROAD);
+for (let row = 2; row <= 9; row += 1) {
+  if (row === 4 || row === 8) continue; // já são o cruzamento, acima
+  colocarTile(9, row, ROAD_V);
+}
 
 // pracinha em frente à igreja (por cima da relva já colocada)
 const PLAZA = 'web/mapa/tile_ground_concrete.png';
@@ -255,20 +272,22 @@ function predioApp(col, row, ficheiro, w, h, app) {
   colocarPredio(col, row, ficheiro, w, h, (el, p) => abrirCartaoApp(el, p, app), 'Abrir ' + app.nome);
 }
 
+// quadra oeste (a poente da rua vertical, coluna 9)
 predioApp(3,    2, 'web/mapa/bld_church_a.png',           256, 156, APPS.classcard);
 predioApp(5,    2, 'web/mapa/bld_torre_subsight.png',     256, 220, APPS.subsight);
 predioApp(7,    2, 'web/mapa/bld_torre_prepacoin.png',    256, 219, APPS.prepacoin);
-predioApp(9,    2, 'web/mapa/bld_torre_cartorio.png',     256, 220, APPS.cartorio);
-predioApp(11,   2, 'web/mapa/bld_torre_at.png',           256, 219, APPS.at);
-predioApp(13,   2, 'web/mapa/bld_torre_segsocial.png',    256, 220, APPS.segsocial);
-predioApp(15,   2, 'web/mapa/bld_torre_dr.png',           256, 219, APPS.dr);
+// quadra este
+predioApp(11,   2, 'web/mapa/bld_torre_cartorio.png',     256, 220, APPS.cartorio);
+predioApp(13,   2, 'web/mapa/bld_torre_at.png',           256, 219, APPS.at);
+predioApp(15,   2, 'web/mapa/bld_torre_segsocial.png',    256, 220, APPS.segsocial);
+predioApp(17,   2, 'web/mapa/bld_torre_dr.png',           256, 219, APPS.dr);
 
 predioApp(3,    6, 'web/mapa/bld_torre_emdia.png',        256, 220, APPS.emdia);
 predioApp(5,    6, 'web/mapa/bld_torre_openlab.png',      256, 219, APPS.openlab);
 predioApp(7,    6, 'web/mapa/bld_torre_talentos.png',     256, 220, APPS.talentos);
-predioApp(9,    6, 'web/mapa/bld_torre_clientify.png',    256, 219, APPS.clientify);
-predioApp(11,   6, 'web/mapa/bld_torre_aeromail.png',     256, 220, APPS.aeromail);
-predioApp(13,   6, 'web/mapa/bld_torre_pulso.png',        256, 219, APPS.pulso);
+predioApp(11,   6, 'web/mapa/bld_torre_clientify.png',    256, 219, APPS.clientify);
+predioApp(13,   6, 'web/mapa/bld_torre_aeromail.png',     256, 220, APPS.aeromail);
+predioApp(15,   6, 'web/mapa/bld_torre_pulso.png',        256, 219, APPS.pulso);
 
 // ── vida nas ruas: árvores, candeeiros, flores e carros ─────────────
 // (puramente decorativo -- para a cidade não ficar só uma grelha de
@@ -283,13 +302,36 @@ const FLOR_AMARELA = 'web/mapa/prop_flowers_yellow.png';
 // árvores e candeeiros a acompanhar as duas ruas, nas fileiras de
 // relva logo antes/depois de cada uma (3 e 5 para a rua institucional,
 // 7 e 9 para a do bairro), intercalados para não ficar tudo em fila.
-[6, 9, 12].forEach((col) => colocarDecoracao(col, 3, ARVORE_M, 57, 80)); // 2-4 é a pracinha (flores)
-[5, 8, 11, 14].forEach((col) => colocarDecoracao(col, 3, CANDEEIRO, 36, 43));
-[4, 7, 10, 13].forEach((col) => colocarDecoracao(col, 5, CANDEEIRO, 36, 43));
-[6, 9, 12].forEach((col) => colocarDecoracao(col, 5, ARVORE_G, 78, 101));
-[4, 8, 12].forEach((col) => colocarDecoracao(col, 7, PINHEIRO, 72, 104));
+// coluna 9 é a rua vertical -- fica de fora de todas estas listas.
+[6, 12].forEach((col) => colocarDecoracao(col, 3, ARVORE_M, 57, 80)); // 2-4 é a pracinha (flores)
+[5, 8, 11, 14, 16].forEach((col) => colocarDecoracao(col, 3, CANDEEIRO, 36, 43));
+[4, 7, 10, 13, 16].forEach((col) => colocarDecoracao(col, 5, CANDEEIRO, 36, 43));
+[6, 12].forEach((col) => colocarDecoracao(col, 5, ARVORE_G, 78, 101));
+[4, 8, 12, 16].forEach((col) => colocarDecoracao(col, 7, PINHEIRO, 72, 104));
 [6, 10, 14].forEach((col) => colocarDecoracao(col, 7, CANDEEIRO, 36, 43));
-[5, 9, 13].forEach((col) => colocarDecoracao(col, 9, ARVORE_M, 57, 80));
+[5, 13].forEach((col) => colocarDecoracao(col, 9, ARVORE_M, 57, 80));
+
+// gente a passear -- perto da pracinha e do cruzamento, para a rua
+// não ficar só de carros e prédios parados
+const PESSOA_A = 'web/mapa/char_a_idle_SE_f01.png';
+const PESSOA_A_AND = 'web/mapa/char_a_walk_NE_f02.png';
+const PESSOA_B = 'web/mapa/char_b_idle_SW_f01.png';
+const PESSOA_B_AND = 'web/mapa/char_b_walk_SE_f02.png';
+// Descoberta ao testar: uma torre de 220px é alta o bastante para a
+// caixa cobrir umas 5 linhas para cima da sua própria linha -- uma
+// torre na linha 6 alcança visualmente até perto da linha 1, por isso
+// NENHUMA das linhas-tampão (3,5,7 perto do núcleo) está livre do
+// alcance de alguma torre próxima. A única coluna garantidamente sem
+// prédio nenhum (norte ou sul) é a 9, a própria rua vertical -- é
+// onde a gente fica, como se estivesse a atravessar/à espera.
+// linha 7 (a seguir à fileira sul) é que está mesmo livre -- uma
+// torre só alcança PARA CIMA da sua própria base, nunca para baixo,
+// por isso a linha 7 (a sul da linha 6) fica sempre de fora do
+// alcance de qualquer torre do núcleo institucional.
+colocarDecoracao(9,  7, PESSOA_A, 24, 32);
+colocarDecoracao(9,  9, PESSOA_B, 24, 32);
+colocarDecoracao(15, 9, PESSOA_A_AND, 24, 32);
+colocarDecoracao(17, 7, PESSOA_B_AND, 24, 32);
 
 // carros nas duas ruas -- mesma orientação SE/NW da estrada, de
 // vários modelos e cores para não parecerem clones

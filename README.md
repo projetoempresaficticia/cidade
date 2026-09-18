@@ -24,6 +24,31 @@ aqui a cena é montada por **tiles isométricos**, não uma ilustração
    um lote por empresa (`unique(empresa_cedula)`), um lote por posição
    (`unique(linha,coluna)`).
 
+## A quadra institucional agora é uma grelha a sério
+
+Pedido do Germano, com uma imagem de referência (cidade isométrica
+densa, ruas a cruzar-se em quadras): a "baixa" deixou de ser um bloco
+único e virou duas quadras (7 apps a poente, 6 a nascente) separadas
+por uma **rua vertical de verdade** na coluna 9, com cruzamento
+(`tile_road_xsing`) nos dois pontos onde cruza as ruas horizontais.
+Também ganhou: pracinha com canteiro de flores em frente à igreja,
+árvores/candeeiros mais densos, carros e pessoas a passear
+(`Characters/` do kit, nunca usada até agora).
+
+**Lição real ao colocar as pessoas:** uma torre de ~220px de altura
+tem a caixa (bounding box) alta o suficiente para cobrir umas 5 linhas
+da grelha PARA CIMA da sua própria linha — uma torre na linha 6
+alcança visualmente quase até à linha 1. Isto significa que nenhuma
+das fileiras-tampão perto do núcleo (3, 5) está livre do alcance de
+alguma torre vizinha (nem sempre a mais óbvia — apanhei pessoas
+"penduradas no telhado" de prédios que, pela conta ingénua de
+linha+coluna, pareciam estar longe). Regra que ficou provada por
+testar (`document.elementFromPoint` a perguntar o que está por baixo
+de cada decoração, não a olhar só para o screenshot): uma torre só
+alcança PARA CIMA da sua própria linha, nunca para baixo — por isso a
+linha imediatamente a SUL de uma fileira de prédios está sempre livre,
+e é aí que fica toda a decoração nova.
+
 ## O que já dá para fazer
 
 - **Arrastar** o mapa (clicar e segurar, ou toque no telemóvel) —
