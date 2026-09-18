@@ -2,17 +2,17 @@
 <html lang="pt-PT">
 <head>
   <meta charset="UTF-8" />
-  <meta name="cd-versao" content="90373c41af03" />
+  <meta name="cd-versao" content="9355c88a2ef1" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Cidade Prepara Portugal</title>
-  <meta name="description" content="Protótipo isométrico clicável da cidade do ecossistema — cada lote é um app real." />
+  <meta name="description" content="Mapa isométrico clicável da cidade do ecossistema — empresas reais reclamam o seu lote." />
   <link rel="icon" href="favicon-32.png" />
   <link rel="apple-touch-icon" href="apple-touch-icon.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet"
         href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,700;0,900;1,700;1,900&family=Inter:wght@400;500;600;700&display=swap" />
-  <link rel="stylesheet" href="web/biblioteca/cidade.css?v=a1600365" />
+  <link rel="stylesheet" href="web/biblioteca/cidade.css?v=b6a6b900" />
 </head>
 <body>
 
@@ -21,16 +21,81 @@
     <div class="selo-grelha"><span></span><span></span><span></span><span></span></div>
     <div>
       <h1>Cidade Prepara Portugal</h1>
-      <small>Protótipo — clique num edifício</small>
+      <small>Arraste para explorar — clique num edifício para abrir</small>
     </div>
   </div>
 
-  <div class="dica">Arraste para rodar a ideia na cabeça: cada <b>lote</b> vira um app do ecossistema.</div>
+  <div class="crachá crachá-conta" id="crachá-conta">
+    <button type="button" id="btn-entrar">Entrar para reclamar um lote</button>
+    <button type="button" id="btn-meu-lote" hidden>Adicionar o meu prédio</button>
+  </div>
+
+  <div class="dica" id="dica">Arraste para mover a cidade.</div>
 
   <div class="mapa" id="mapa"></div>
 </div>
 
-<script src="app.js?v=9b58b85e"></script>
+<dialog id="janela-entrar">
+  <h2 class="titulo-janela">Entrar</h2>
+  <p class="texto-janela">Sessão de gerente — a mesma conta de sempre no ecossistema.</p>
+  <form id="form-entrar">
+    <div class="campo">
+      <label for="entrar-email">Email de login</label>
+      <input id="entrar-email" name="email" type="email" required autocomplete="username" placeholder="nome@prepara.pt" />
+    </div>
+    <div class="campo">
+      <label for="entrar-senha">Senha</label>
+      <input id="entrar-senha" name="senha" type="password" required autocomplete="current-password" />
+    </div>
+    <p class="msg" id="msg-entrar"></p>
+    <div class="fila-botoes">
+      <button type="button" class="botao secundario" id="entrar-cancelar">Cancelar</button>
+      <button type="submit" class="botao primario">Entrar</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="janela-lote">
+  <h2 class="titulo-janela" id="lote-titulo">O meu prédio</h2>
+  <p class="texto-janela" id="lote-instrucao"></p>
+
+  <form id="form-lote">
+    <div class="campo">
+      <label>Empresa</label>
+      <p class="valor-leitura" id="lote-nome-empresa">—</p>
+    </div>
+    <div class="campo">
+      <label>E-mail (AeroMail)</label>
+      <p class="valor-leitura" id="lote-email-empresa">—</p>
+    </div>
+    <div class="campo">
+      <label>Tipo de prédio</label>
+      <div class="paleta" id="paleta-tipos"></div>
+    </div>
+    <div class="campo">
+      <label for="lote-foto">Foto (opcional)</label>
+      <input id="lote-foto" type="file" accept="image/*" />
+      <img id="lote-foto-preview" alt="" hidden />
+    </div>
+    <div class="campo">
+      <label for="lote-link">Link (opcional)</label>
+      <input id="lote-link" type="url" placeholder="https://..." />
+    </div>
+    <div class="campo">
+      <label for="lote-rede">Rede social (opcional)</label>
+      <input id="lote-rede" type="text" placeholder="@empresa ou link" />
+    </div>
+    <p class="msg" id="msg-lote"></p>
+    <div class="fila-botoes">
+      <button type="button" class="botao secundario" id="lote-cancelar">Cancelar</button>
+      <button type="submit" class="botao primario" id="lote-guardar" disabled>Escolha um lote no mapa</button>
+    </div>
+  </form>
+</dialog>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://projetoempresaficticia.github.io/pp-base/web/comum.js"></script>
+<script src="app.js?v=8fb935b7"></script>
 <script src="web/atualizar.js?v=f8b7ee12"></script>
 </body>
 </html>

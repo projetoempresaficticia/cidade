@@ -33,7 +33,11 @@ html, body {
   background:
     radial-gradient(120% 90% at 50% 0%, var(--ceu-topo) 0%, var(--ceu-base) 62%, var(--agua) 100%);
   overflow: hidden;
+  cursor: grab;
+  touch-action: none;
 }
+.cena.a-arrastar { cursor: grabbing; }
+.cena.a-escolher-lote .tile.lote-livre { cursor: pointer; }
 
 .mapa {
   /* left/top reais são calculados em app.js, a partir da caixa que
@@ -58,6 +62,39 @@ html, body {
   cursor: pointer;
   transition: transform 0.12s ease, filter 0.12s ease;
   transform-origin: 50% 100%;
+}
+
+/* ── lote livre (por reclamar) ────────────────────────────────────── */
+.lote-livre-marca {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  pointer-events: none;
+  opacity: 0.85;
+}
+.lote-livre-marca .pino {
+  width: 30px; height: 30px; border-radius: 50%;
+  background: rgba(251, 246, 236, 0.9);
+  border: 2px dashed var(--azulejo);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; font-weight: 700; color: var(--azulejo);
+}
+.lote-livre-marca span {
+  font-size: 10px; font-weight: 600; color: var(--tinta);
+  background: rgba(251, 246, 236, 0.85); padding: 2px 6px; border-radius: 999px;
+  white-space: nowrap;
+}
+.cena.a-escolher-lote .lote-livre-marca {
+  pointer-events: auto;
+  cursor: pointer;
+  animation: pulsar 1.4s ease-in-out infinite;
+}
+.cena.a-escolher-lote .lote-livre-marca .pino { background: var(--telha); border-color: var(--marfim); color: var(--marfim); }
+@keyframes pulsar {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.15); }
 }
 .predio:hover, .predio:focus-visible {
   transform: translateY(-6px) scale(1.03);
@@ -114,6 +151,56 @@ html, body {
 }
 .selo-grelha span { background: var(--marfim); border-radius: 2px; }
 
+.crachá-conta { top: 20px; right: 20px; padding: 6px; }
+.crachá-conta button {
+  border: none; background: var(--azulejo); color: var(--marfim);
+  font: 600 13px 'Inter', sans-serif; padding: 10px 16px; border-radius: 999px;
+  cursor: pointer; transition: background 0.12s ease;
+}
+.crachá-conta button:hover { background: #164A70; }
+
+/* ── diálogos (entrar / meu lote) ─────────────────────────────────── */
+dialog {
+  border: none; border-radius: 18px; padding: 24px;
+  width: min(420px, calc(100vw - 40px));
+  box-shadow: 0 24px 60px var(--sombra);
+  background: var(--marfim); color: var(--tinta);
+}
+dialog::backdrop { background: rgba(15, 24, 34, 0.45); backdrop-filter: blur(2px); }
+.titulo-janela {
+  margin: 0 0 4px; font-family: 'Fraunces', Georgia, serif;
+  font-weight: 700; font-size: 20px; color: var(--azulejo);
+}
+.texto-janela { margin: 0 0 16px; font-size: 13px; color: #5A6B78; line-height: 18px; }
+.campo { margin-bottom: 14px; }
+.campo label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 6px; color: #3E4C58; }
+.campo input[type="email"], .campo input[type="password"],
+.campo input[type="text"], .campo input[type="url"], .campo input[type="file"] {
+  width: 100%; padding: 10px 12px; border: 1px solid rgba(28,92,140,0.25);
+  border-radius: 10px; font: 14px 'Inter', sans-serif; background: #fff; color: var(--tinta);
+}
+.campo input:focus-visible { outline: 2px solid var(--azulejo); outline-offset: 1px; }
+.valor-leitura { margin: 0; font-size: 14px; font-weight: 600; color: var(--tinta); }
+#lote-foto-preview {
+  margin-top: 8px; width: 96px; height: 96px; object-fit: cover;
+  border-radius: 12px; border: 1px solid rgba(28,92,140,0.2);
+}
+.paleta { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.paleta button {
+  border: 2px solid transparent; border-radius: 10px; padding: 4px;
+  background: #fff; cursor: pointer;
+}
+.paleta button img { width: 100%; display: block; border-radius: 6px; }
+.paleta button.selecionada { border-color: var(--telha); }
+.msg { min-height: 16px; font-size: 12px; margin: 0 0 8px; }
+.msg.erro { color: #B3261E; }
+.msg.ok { color: #1E7A3D; }
+.fila-botoes { display: flex; justify-content: flex-end; gap: 10px; margin-top: 4px; }
+.botao { border: none; border-radius: 999px; padding: 10px 18px; font: 600 13px 'Inter', sans-serif; cursor: pointer; }
+.botao.primario { background: var(--telha); color: var(--marfim); }
+.botao.primario:disabled { opacity: 0.5; cursor: not-allowed; }
+.botao.secundario { background: var(--azulejo-veu); color: var(--azulejo); }
+
 .dica {
   position: absolute;
   bottom: 20px;
@@ -161,6 +248,15 @@ html, body {
   text-decoration: none;
 }
 .cartao a:hover { text-decoration: underline; }
+.cartao-foto {
+  width: 100%; height: 110px; object-fit: cover; border-radius: 10px; margin-bottom: 10px; display: block;
+}
+.cartao-linha { display: block; font-size: 12px; color: #4C5A66; margin-bottom: 4px; }
+.cartao-editar {
+  display: block; text-align: center; margin-top: 10px; padding: 8px;
+  border-radius: 10px; background: var(--azulejo-veu); color: var(--azulejo);
+  font-size: 12px; font-weight: 700; text-decoration: none; cursor: pointer; border: none; width: 100%;
+}
 .cartao-fechar {
   position: absolute; top: 10px; right: 10px;
   width: 22px; height: 22px; border-radius: 50%; border: none;
@@ -171,4 +267,6 @@ html, body {
 @media (max-width: 600px) {
   .crachá h1 { font-size: 15px; }
   .dica { left: 20px; right: 20px; text-align: center; }
+  .crachá-conta { top: auto; bottom: 60px; left: 20px; right: 20px; display: flex; justify-content: center; }
+  .crachá-conta button { width: 100%; }
 }
