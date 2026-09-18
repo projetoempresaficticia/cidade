@@ -82,23 +82,6 @@ html, body {
 }
 .predio:hover .ponto, .predio.ativo .ponto { background: var(--telha); border-color: var(--marfim); }
 
-/* ── letreiro "PREPARA PORTUGAL" (à boardwalk) ─────────────────────── */
-.letreiro {
-  position: absolute;
-  font-family: 'Fraunces', Georgia, serif;
-  font-weight: 900;
-  font-style: italic;
-  font-size: 30px;
-  letter-spacing: 0.01em;
-  color: var(--marfim);
-  text-shadow:
-    1px 1px 0 var(--azulejo), 2px 2px 0 var(--azulejo), 3px 3px 0 var(--azulejo),
-    4px 4px 0 var(--azulejo), 5px 5px 0 var(--azulejo),
-    6px 6px 10px var(--sombra);
-  white-space: nowrap;
-  pointer-events: none;
-}
-
 /* ── chrome flutuante ─────────────────────────────────────────────── */
 .crachá {
   position: absolute;
@@ -187,6 +170,5 @@ html, body {
 
 @media (max-width: 600px) {
   .crachá h1 { font-size: 15px; }
-  .letreiro { font-size: 20px; }
   .dica { left: 20px; right: 20px; text-align: center; }
 }

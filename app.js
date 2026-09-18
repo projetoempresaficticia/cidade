@@ -82,76 +82,64 @@ function colocarPredio(col, row, ficheiro, w, h, app) {
   registarLimites(left, top, w, h);
 }
 
-function colocarLetreiro(col, row, texto) {
-  const p = projetar(col, row);
-  const el = document.createElement('div');
-  el.className = 'letreiro';
-  el.textContent = texto;
-  el.style.left = p.x + 'px';
-  el.style.top = p.y + 'px';
-  el.style.zIndex = z(col, row) + 500;
-  mapa.appendChild(el);
-  // largura aproximada (a fonte só carrega depois) -- suficiente para
-  // entrar na conta de centragem sem esperar por layout.
-  registarLimites(p.x - 220, p.y - 10, 440, 60);
-}
-
-// ── litoral: ilha 10×5 (cols 1-10, rows 1-5) rodeada de água ────────
+// ── litoral: ilha 16×7 (cols 1-16, rows 1-7) rodeada de água ────────
 // Nota: o kit "Isometric City" tem tiles de transição água/relva
 // (cantos e arestas), mas a orientação N/S/E/W deles não bateu com a
 // nossa grelha na primeira tentativa (a costa comia terra a mais) —
 // para este protótipo fica uma borda limpa; afinar a transição é
-// acabamento de uma próxima passagem, não o que estamos a validar.
+// acabamento de uma próxima passagem.
 const GRASS = 'web/mapa/tile_ground_grass.png';
 const WATER = 'web/mapa/tile_ground_water.png';
 const ROAD = 'web/mapa/tile_road_straight_SE_normal.png';
 
-for (let row = 0; row <= 6; row += 1) {
-  for (let col = 0; col <= 11; col += 1) {
-    const dentro = col >= 1 && col <= 10 && row >= 1 && row <= 5;
+for (let row = 0; row <= 8; row += 1) {
+  for (let col = 0; col <= 17; col += 1) {
+    const dentro = col >= 1 && col <= 16 && row >= 1 && row <= 7;
     colocarTile(col, row, dentro ? GRASS : WATER);
   }
 }
 
-// rua principal: linha 3, colunas 2-9
-for (let col = 2; col <= 9; col += 1) colocarTile(col, 3, ROAD);
+// rua principal: linha 4, colunas 2-15 -- com uma fileira de relva de
+// cada lado antes de chegar aos prédios (linhas 2 e 6), para as
+// torres ficarem visivelmente recuadas da rua, não coladas a ela.
+for (let col = 2; col <= 15; col += 1) colocarTile(col, 4, ROAD);
 
-colocarLetreiro(5.5, 6.4, 'PREPARA PORTUGAL');
-
-// ── lotes: um por app real do ecossistema (13/13) ──────────────────
+// ── lotes: um por app real do ecossistema (13/13), torres tipo
+// Prepacoin, cada uma na cor de marca real (ver ferramentas/
+// gerar_torres.py) ──────────────────────────────────────────────
 const APPS = {
   classcard:  { nome: 'ClassCard',  descricao: 'Carteirinha — identidade de pessoas e empresas', cor: '#005ED7', repo: 'classcard' },
-  prepacoin:  { nome: 'Prepacoin',  descricao: 'Banco — faturas, boletos, SAF-T', cor: '#EBFF78', repo: 'prepacoin' },
-  aeromail:   { nome: 'AeroMail',   descricao: 'Correio interno, com anexos', cor: '#0F766E', repo: 'aeromail' },
   subsight:   { nome: 'Subsight',   descricao: 'Assinatura digital de documentos', cor: '#FF7F00', repo: 'subsight' },
-  clientify:  { nome: 'Clientify',  descricao: 'Pedidos dos clientes fictícios', cor: '#E85002', repo: 'clientify' },
-  openlab:    { nome: 'OpenLab',    descricao: 'Criar uma empresa nova, de uma vez', cor: '#6C3BFF', repo: 'openlab' },
-  emdia:      { nome: 'EmDia',      descricao: 'Contas de água, energia, internet e renda', cor: '#536DFE', repo: 'emdia' },
-  talentos:   { nome: 'Talentos',   descricao: 'Vagas de emprego e candidaturas', cor: '#B9433F', repo: 'talentos' },
+  prepacoin:  { nome: 'Prepacoin',  descricao: 'Banco — faturas, boletos, SAF-T', cor: '#EBFF78', repo: 'prepacoin' },
   cartorio:   { nome: 'Cartório Notarial', descricao: 'Certidões e protocolos', cor: '#69B518', repo: 'cartorio-notarial' },
   at:         { nome: 'Portal das Finanças', descricao: 'AT — e-Fatura, IVA, Modelo 22', cor: '#5B3F8C', repo: 'portal-financas' },
   segsocial:  { nome: 'Segurança Social', descricao: 'Trabalhadores, TSU, carreira contributiva', cor: '#F4B400', repo: 'seguranca-social' },
   dr:         { nome: 'Diário da República', descricao: 'Publicações oficiais, editais', cor: '#69092D', repo: 'diario-republica' },
+  emdia:      { nome: 'EmDia',      descricao: 'Contas de água, energia, internet e renda', cor: '#536DFE', repo: 'emdia' },
+  openlab:    { nome: 'OpenLab',    descricao: 'Criar uma empresa nova, de uma vez', cor: '#6C3BFF', repo: 'openlab' },
+  talentos:   { nome: 'Talentos',   descricao: 'Vagas de emprego e candidaturas', cor: '#B9433F', repo: 'talentos' },
+  clientify:  { nome: 'Clientify',  descricao: 'Pedidos dos clientes fictícios', cor: '#E85002', repo: 'clientify' },
+  aeromail:   { nome: 'AeroMail',   descricao: 'Correio interno, com anexos', cor: '#0F766E', repo: 'aeromail' },
   pulso:      { nome: 'Pulso',      descricao: 'Mensagens e grupos', cor: '#1F2747', repo: 'pulso' },
 };
 const urlApp = (repo) => `https://projetoempresaficticia.github.io/${repo}/`;
 
-// fileira norte (row 2) — cols 2 a 9
-colocarPredio(2,   2, 'web/mapa/bld_house_medium_brickwhite_a.png', 128, 85,  APPS.aeromail);
-colocarPredio(3.5, 2, 'web/mapa/bld_church_a.png',                  256, 156, APPS.classcard); // 2 de largura
-colocarPredio(5,   2, 'web/mapa/bld_house_tall_brickwhite_a.png',   128, 105, APPS.subsight);
-colocarPredio(6,   2, 'web/mapa/bld_house_small_red_a.png',         128, 76,  APPS.clientify);
-colocarPredio(7,   2, 'web/mapa/bld_house_tall_brown_a.png',        128, 105, APPS.cartorio);
-colocarPredio(8,   2, 'web/mapa/bld_house_tall_purple_a.png',       128, 105, APPS.at);
-colocarPredio(9,   2, 'web/mapa/bld_house_small_yellow_a.png',      128, 76,  APPS.segsocial);
+// fileira norte (row 2) — 7 lotes, cols 2 a 15
+colocarPredio(3,    2, 'web/mapa/bld_church_a.png',           256, 156, APPS.classcard); // âncora (2 de largura)
+colocarPredio(5,    2, 'web/mapa/bld_torre_subsight.png',     256, 220, APPS.subsight);
+colocarPredio(7,    2, 'web/mapa/bld_torre_prepacoin.png',    256, 219, APPS.prepacoin);
+colocarPredio(9,    2, 'web/mapa/bld_torre_cartorio.png',     256, 220, APPS.cartorio);
+colocarPredio(11,   2, 'web/mapa/bld_torre_at.png',           256, 219, APPS.at);
+colocarPredio(13,   2, 'web/mapa/bld_torre_segsocial.png',    256, 220, APPS.segsocial);
+colocarPredio(15,   2, 'web/mapa/bld_torre_dr.png',           256, 219, APPS.dr);
 
-// fileira sul (row 4) — cols 2 a 8 (col 9 fica de reserva, relva livre)
-colocarPredio(2,   4, 'web/mapa/bld_house_tall_brickwhite_b.png',   128, 106, APPS.openlab);
-colocarPredio(3,   4, 'web/mapa/bld_house_medium_blue_a.png',       128, 85,  APPS.emdia);
-colocarPredio(4.5, 4, 'web/mapa/bld_apartments_brickwhite_a.png',   256, 220, APPS.prepacoin); // 2 de largura
-colocarPredio(6,   4, 'web/mapa/bld_house_small_brickred_a.png',    128, 76,  APPS.talentos);
-colocarPredio(7,   4, 'web/mapa/bld_house_small_purple_a.png',      128, 76,  APPS.dr);
-colocarPredio(8,   4, 'web/mapa/bld_house_tall_blue_a.png',         128, 105, APPS.pulso);
+// fileira sul (row 6) — 6 lotes, cols 2 a 13 (col 14-15 fica de reserva)
+colocarPredio(3,    6, 'web/mapa/bld_torre_emdia.png',        256, 220, APPS.emdia);
+colocarPredio(5,    6, 'web/mapa/bld_torre_openlab.png',      256, 219, APPS.openlab);
+colocarPredio(7,    6, 'web/mapa/bld_torre_talentos.png',     256, 220, APPS.talentos);
+colocarPredio(9,    6, 'web/mapa/bld_torre_clientify.png',    256, 219, APPS.clientify);
+colocarPredio(11,   6, 'web/mapa/bld_torre_aeromail.png',     256, 220, APPS.aeromail);
+colocarPredio(13,   6, 'web/mapa/bld_torre_pulso.png',        256, 219, APPS.pulso);
 
 // ── centrar #mapa pelo conteúdo real, não por uma percentagem à mão ─
 {
