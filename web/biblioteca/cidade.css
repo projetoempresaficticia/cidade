@@ -51,12 +51,13 @@ html, body {
   height: 0;
 }
 
-.tile, .predio {
+.tile, .predio, .decoracao {
   position: absolute;
   user-select: none;
   -webkit-user-drag: none;
 }
 .tile { display: block; }
+.decoracao { pointer-events: none; }
 
 .predio {
   cursor: pointer;

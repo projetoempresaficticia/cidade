@@ -86,6 +86,25 @@ function colocarPredio(col, row, ficheiro, w, h, aoClicar, aria) {
   return el;
 }
 
+// decoração (árvore, candeeiro, carro, flor...) -- mesma âncora dos
+// prédios (base encostada ao chão da célula), mas sem clique nem
+// marcador -- só para dar vida às ruas e à praça.
+function colocarDecoracao(col, row, ficheiro, w, h) {
+  const p = projetar(col, row);
+  const left = Math.round(p.x - w / 2);
+  const top = Math.round(p.y + TH - h);
+  const el = document.createElement('img');
+  el.className = 'decoracao';
+  el.src = ficheiro;
+  el.style.width = w + 'px';
+  el.style.height = h + 'px';
+  el.style.left = left + 'px';
+  el.style.top = top + 'px';
+  el.style.zIndex = z(col, row) + 1;
+  mapa.appendChild(el);
+  registarLimites(left, top, w, h);
+}
+
 // ── litoral orgânico ─────────────────────────────────────────────
 // Mapeamento confirmado por teste isolado (ver README): os nomes dos
 // ficheiros do kit não correspondem à nossa convenção de grelha --
@@ -128,6 +147,10 @@ for (let row = 0; row <= ROW_MAX + 1; row += 1) {
 // duas ruas: a institucional (linha 4) e a do novo bairro (linha 8)
 for (let col = 2; col <= 15; col += 1) colocarTile(col, 4, ROAD);
 for (let col = 2; col <= 15; col += 1) colocarTile(col, 8, ROAD);
+
+// pracinha em frente à igreja (por cima da relva já colocada)
+const PLAZA = 'web/mapa/tile_ground_concrete.png';
+for (const col of [2, 3, 4]) colocarTile(col, 3, PLAZA);
 
 // ── cartão popup (dois formatos: app do ecossistema / empresa real) ─
 let cartaoAtual = null;
@@ -246,6 +269,41 @@ predioApp(7,    6, 'web/mapa/bld_torre_talentos.png',     256, 220, APPS.talento
 predioApp(9,    6, 'web/mapa/bld_torre_clientify.png',    256, 219, APPS.clientify);
 predioApp(11,   6, 'web/mapa/bld_torre_aeromail.png',     256, 220, APPS.aeromail);
 predioApp(13,   6, 'web/mapa/bld_torre_pulso.png',        256, 219, APPS.pulso);
+
+// ── vida nas ruas: árvores, candeeiros, flores e carros ─────────────
+// (puramente decorativo -- para a cidade não ficar só uma grelha de
+// caixas quadradas, sem gente nem verde nenhum)
+const ARVORE_M = 'web/mapa/prop_tree_common_medium.png';
+const ARVORE_G = 'web/mapa/prop_tree_common_large.png';
+const PINHEIRO = 'web/mapa/prop_tree_pine_medium.png';
+const CANDEEIRO = 'web/mapa/prop_lightpole_a.png';
+const FLOR_ROSA = 'web/mapa/prop_flowers_pink.png';
+const FLOR_AMARELA = 'web/mapa/prop_flowers_yellow.png';
+
+// árvores e candeeiros a acompanhar as duas ruas, nas fileiras de
+// relva logo antes/depois de cada uma (3 e 5 para a rua institucional,
+// 7 e 9 para a do bairro), intercalados para não ficar tudo em fila.
+[6, 9, 12].forEach((col) => colocarDecoracao(col, 3, ARVORE_M, 57, 80)); // 2-4 é a pracinha (flores)
+[5, 8, 11, 14].forEach((col) => colocarDecoracao(col, 3, CANDEEIRO, 36, 43));
+[4, 7, 10, 13].forEach((col) => colocarDecoracao(col, 5, CANDEEIRO, 36, 43));
+[6, 9, 12].forEach((col) => colocarDecoracao(col, 5, ARVORE_G, 78, 101));
+[4, 8, 12].forEach((col) => colocarDecoracao(col, 7, PINHEIRO, 72, 104));
+[6, 10, 14].forEach((col) => colocarDecoracao(col, 7, CANDEEIRO, 36, 43));
+[5, 9, 13].forEach((col) => colocarDecoracao(col, 9, ARVORE_M, 57, 80));
+
+// carros nas duas ruas -- mesma orientação SE/NW da estrada, de
+// vários modelos e cores para não parecerem clones
+colocarDecoracao(4,  4, 'web/mapa/veh_sedan_blue_SE.png', 57, 35);
+colocarDecoracao(8,  4, 'web/mapa/veh_sedan_red_NW.png', 57, 35);
+colocarDecoracao(12, 4, 'web/mapa/veh_van_white_NW.png', 60, 41);
+colocarDecoracao(6,  8, 'web/mapa/veh_pickup_orange_SE.png', 61, 37);
+colocarDecoracao(10, 8, 'web/mapa/veh_sedan_white_SE.png', 57, 35);
+colocarDecoracao(13, 8, 'web/mapa/veh_pickup_black_NW.png', 61, 37);
+
+// canteiro de flores na pracinha em frente à igreja
+colocarDecoracao(2, 3, FLOR_ROSA, 19, 18);
+colocarDecoracao(3, 3, FLOR_AMARELA, 19, 18);
+colocarDecoracao(4, 3, FLOR_ROSA, 19, 18);
 
 // ── bairro novo: lotes de empresas reais ────────────────────────────
 const PALETA = ['coral', 'turquesa', 'violeta', 'dourado', 'verde', 'azul', 'rosa', 'grafite'];
