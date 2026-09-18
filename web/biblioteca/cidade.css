@@ -36,9 +36,13 @@ html, body {
 }
 
 .mapa {
+  /* left/top reais são calculados em app.js, a partir da caixa que
+     envolve tudo o que foi colocado -- para a cidade ficar centrada
+     mesmo quando cresce e deixa de ser simétrica. Isto aqui é só o
+     valor antes do script correr. */
   position: absolute;
   left: 50%;
-  top: 52%;
+  top: 50%;
   width: 0;
   height: 0;
 }

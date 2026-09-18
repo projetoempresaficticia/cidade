@@ -10,7 +10,7 @@ const TW = 128, TH = 64; // largura/altura do losango do chão
 
 function projetar(col, row) {
   // devolve o vértice de topo (N) do losango em (col,row), em px,
-  // relativo ao centro de #mapa. Arredondado a inteiro: posições
+  // relativo à origem de #mapa. Arredondado a inteiro: posições
   // sub-pixel deixam ver um fiapo de vinco entre losangos vizinhos.
   return {
     x: Math.round((col - row) * (TW / 2)),
@@ -24,29 +24,44 @@ function z(col, row) {
 
 const mapa = document.getElementById('mapa');
 
+// Guarda a caixa que envolve tudo o que já foi colocado, para no fim
+// centrar #mapa pelo conteúdo real (não por uma percentagem à mão que
+// se desacerta cada vez que a cidade cresce).
+const limites = { minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity };
+function registarLimites(left, top, w, h) {
+  limites.minX = Math.min(limites.minX, left);
+  limites.minY = Math.min(limites.minY, top);
+  limites.maxX = Math.max(limites.maxX, left + w);
+  limites.maxY = Math.max(limites.maxY, top + h);
+}
+
 function colocarTile(col, row, ficheiro) {
   const p = projetar(col, row);
+  const left = Math.round(p.x - TW / 2);
   const el = document.createElement('img');
   el.className = 'tile';
   el.src = ficheiro;
   el.style.width = TW + 'px';
   el.style.height = TH + 'px';
-  el.style.left = Math.round(p.x - TW / 2) + 'px';
+  el.style.left = left + 'px';
   el.style.top = p.y + 'px';
   el.style.zIndex = z(col, row);
   mapa.appendChild(el);
+  registarLimites(left, p.y, TW, TH);
 }
 
 // col pode ser fracionário (ex.: 3.5) para edifícios com 2 losangos de largura
 function colocarPredio(col, row, ficheiro, w, h, app) {
   const p = projetar(col, row);
+  const left = Math.round(p.x - w / 2);
+  const top = Math.round(p.y + TH - h);
   const el = document.createElement('img');
   el.className = 'predio';
   el.src = ficheiro;
   el.style.width = w + 'px';
   el.style.height = h + 'px';
-  el.style.left = Math.round(p.x - w / 2) + 'px';
-  el.style.top = Math.round(p.y + TH - h) + 'px';
+  el.style.left = left + 'px';
+  el.style.top = top + 'px';
   el.style.zIndex = z(col, row) + 1;
   el.tabIndex = 0;
   el.setAttribute('role', 'button');
@@ -64,6 +79,7 @@ function colocarPredio(col, row, ficheiro, w, h, app) {
   });
 
   mapa.appendChild(el);
+  registarLimites(left, top, w, h);
 }
 
 function colocarLetreiro(col, row, texto) {
@@ -75,52 +91,75 @@ function colocarLetreiro(col, row, texto) {
   el.style.top = p.y + 'px';
   el.style.zIndex = z(col, row) + 500;
   mapa.appendChild(el);
+  // largura aproximada (a fonte só carrega depois) -- suficiente para
+  // entrar na conta de centragem sem esperar por layout.
+  registarLimites(p.x - 220, p.y - 10, 440, 60);
 }
 
-// ── litoral: ilha 7×5 (cols 1-7, rows 1-5) rodeada de água ──────────
-// Nota: o kit "Isometric City" tem tiles de transição água/relva (
-// cantos e arestas), mas a orientação N/S/E/W deles não bateu com a
-// nossa grelha à primeira tentativa (a costa comia terra a mais) —
-// nesta primeira versão fica uma borda limpa; afinar a transição é
-// acabamento de uma próxima passagem.
+// ── litoral: ilha 10×5 (cols 1-10, rows 1-5) rodeada de água ────────
+// Nota: o kit "Isometric City" tem tiles de transição água/relva
+// (cantos e arestas), mas a orientação N/S/E/W deles não bateu com a
+// nossa grelha na primeira tentativa (a costa comia terra a mais) —
+// para este protótipo fica uma borda limpa; afinar a transição é
+// acabamento de uma próxima passagem, não o que estamos a validar.
 const GRASS = 'web/mapa/tile_ground_grass.png';
 const WATER = 'web/mapa/tile_ground_water.png';
 const ROAD = 'web/mapa/tile_road_straight_SE_normal.png';
 
 for (let row = 0; row <= 6; row += 1) {
-  for (let col = 0; col <= 8; col += 1) {
-    const dentro = col >= 1 && col <= 7 && row >= 1 && row <= 5;
+  for (let col = 0; col <= 11; col += 1) {
+    const dentro = col >= 1 && col <= 10 && row >= 1 && row <= 5;
     colocarTile(col, row, dentro ? GRASS : WATER);
   }
 }
 
-// rua principal: linha 3, colunas 2-6
-for (let col = 2; col <= 6; col += 1) colocarTile(col, 3, ROAD);
+// rua principal: linha 3, colunas 2-9
+for (let col = 2; col <= 9; col += 1) colocarTile(col, 3, ROAD);
 
-colocarLetreiro(4, 5.85, 'PREPARA PORTUGAL');
+colocarLetreiro(5.5, 6.4, 'PREPARA PORTUGAL');
 
-// ── lotes: cada edifício é um app real do ecossistema ──────────────
-const APPS = [
-  { nome: 'ClassCard', descricao: 'Carteirinha — identidade de pessoas e empresas', cor: '#005ED7', repo: 'classcard' },
-  { nome: 'Prepacoin', descricao: 'Banco — faturas, boletos, SAF-T', cor: '#EBFF78', repo: 'prepacoin' },
-  { nome: 'AeroMail', descricao: 'Correio interno, com anexos', cor: '#0F766E', repo: 'aeromail' },
-  { nome: 'Subsight', descricao: 'Assinatura digital de documentos', cor: '#FF7F00', repo: 'subsight' },
-  { nome: 'Clientify', descricao: 'Pedidos dos clientes fictícios', cor: '#E85002', repo: 'clientify' },
-  { nome: 'OpenLab', descricao: 'Criar uma empresa nova, de uma vez', cor: '#6C3BFF', repo: 'openlab' },
-  { nome: 'EmDia', descricao: 'Contas de água, energia, internet e renda', cor: '#536DFE', repo: 'emdia' },
-  { nome: 'Talentos', descricao: 'Vagas de emprego e candidaturas', cor: '#B9433F', repo: 'talentos' },
-];
+// ── lotes: um por app real do ecossistema (13/13) ──────────────────
+const APPS = {
+  classcard:  { nome: 'ClassCard',  descricao: 'Carteirinha — identidade de pessoas e empresas', cor: '#005ED7', repo: 'classcard' },
+  prepacoin:  { nome: 'Prepacoin',  descricao: 'Banco — faturas, boletos, SAF-T', cor: '#EBFF78', repo: 'prepacoin' },
+  aeromail:   { nome: 'AeroMail',   descricao: 'Correio interno, com anexos', cor: '#0F766E', repo: 'aeromail' },
+  subsight:   { nome: 'Subsight',   descricao: 'Assinatura digital de documentos', cor: '#FF7F00', repo: 'subsight' },
+  clientify:  { nome: 'Clientify',  descricao: 'Pedidos dos clientes fictícios', cor: '#E85002', repo: 'clientify' },
+  openlab:    { nome: 'OpenLab',    descricao: 'Criar uma empresa nova, de uma vez', cor: '#6C3BFF', repo: 'openlab' },
+  emdia:      { nome: 'EmDia',      descricao: 'Contas de água, energia, internet e renda', cor: '#536DFE', repo: 'emdia' },
+  talentos:   { nome: 'Talentos',   descricao: 'Vagas de emprego e candidaturas', cor: '#B9433F', repo: 'talentos' },
+  cartorio:   { nome: 'Cartório Notarial', descricao: 'Certidões e protocolos', cor: '#69B518', repo: 'cartorio-notarial' },
+  at:         { nome: 'Portal das Finanças', descricao: 'AT — e-Fatura, IVA, Modelo 22', cor: '#5B3F8C', repo: 'portal-financas' },
+  segsocial:  { nome: 'Segurança Social', descricao: 'Trabalhadores, TSU, carreira contributiva', cor: '#F4B400', repo: 'seguranca-social' },
+  dr:         { nome: 'Diário da República', descricao: 'Publicações oficiais, editais', cor: '#69092D', repo: 'diario-republica' },
+  pulso:      { nome: 'Pulso',      descricao: 'Mensagens e grupos', cor: '#1F2747', repo: 'pulso' },
+};
 const urlApp = (repo) => `https://projetoempresaficticia.github.io/${repo}/`;
 
-colocarPredio(2, 2, 'web/mapa/bld_house_medium_brickwhite_a.png', 128, 85, APPS[2]); // AeroMail
-colocarPredio(3, 2, 'web/mapa/bld_church_a.png', 256, 156, APPS[0]);                 // ClassCard (2 de largura)
-colocarPredio(5, 2, 'web/mapa/bld_house_tall_brickwhite_a.png', 128, 105, APPS[3]);  // Subsight
-colocarPredio(6, 2, 'web/mapa/bld_house_small_red_a.png', 128, 76, APPS[4]);         // Clientify
+// fileira norte (row 2) — cols 2 a 9
+colocarPredio(2,   2, 'web/mapa/bld_house_medium_brickwhite_a.png', 128, 85,  APPS.aeromail);
+colocarPredio(3.5, 2, 'web/mapa/bld_church_a.png',                  256, 156, APPS.classcard); // 2 de largura
+colocarPredio(5,   2, 'web/mapa/bld_house_tall_brickwhite_a.png',   128, 105, APPS.subsight);
+colocarPredio(6,   2, 'web/mapa/bld_house_small_red_a.png',         128, 76,  APPS.clientify);
+colocarPredio(7,   2, 'web/mapa/bld_house_tall_brown_a.png',        128, 105, APPS.cartorio);
+colocarPredio(8,   2, 'web/mapa/bld_house_tall_purple_a.png',       128, 105, APPS.at);
+colocarPredio(9,   2, 'web/mapa/bld_house_small_yellow_a.png',      128, 76,  APPS.segsocial);
 
-colocarPredio(2, 4, 'web/mapa/bld_house_tall_brickwhite_b.png', 128, 106, APPS[5]);  // OpenLab
-colocarPredio(3, 4, 'web/mapa/bld_house_medium_blue_a.png', 128, 85, APPS[6]);       // EmDia
-colocarPredio(4.5, 4, 'web/mapa/bld_apartments_brickwhite_a.png', 256, 220, APPS[1]);// Prepacoin (2 de largura)
-colocarPredio(6, 4, 'web/mapa/bld_house_small_brickred_a.png', 128, 76, APPS[7]);    // Talentos
+// fileira sul (row 4) — cols 2 a 8 (col 9 fica de reserva, relva livre)
+colocarPredio(2,   4, 'web/mapa/bld_house_tall_brickwhite_b.png',   128, 106, APPS.openlab);
+colocarPredio(3,   4, 'web/mapa/bld_house_medium_blue_a.png',       128, 85,  APPS.emdia);
+colocarPredio(4.5, 4, 'web/mapa/bld_apartments_brickwhite_a.png',   256, 220, APPS.prepacoin); // 2 de largura
+colocarPredio(6,   4, 'web/mapa/bld_house_small_brickred_a.png',    128, 76,  APPS.talentos);
+colocarPredio(7,   4, 'web/mapa/bld_house_small_purple_a.png',      128, 76,  APPS.dr);
+colocarPredio(8,   4, 'web/mapa/bld_house_tall_blue_a.png',         128, 105, APPS.pulso);
+
+// ── centrar #mapa pelo conteúdo real, não por uma percentagem à mão ─
+{
+  const cx = (limites.minX + limites.maxX) / 2;
+  const cy = (limites.minY + limites.maxY) / 2;
+  mapa.style.left = `calc(50% - ${cx}px)`;
+  mapa.style.top = `calc(50% - ${cy}px)`;
+}
 
 // ── cartão popup ────────────────────────────────────────────────
 const cena = document.getElementById('cena');
